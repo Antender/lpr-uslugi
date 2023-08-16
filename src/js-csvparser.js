@@ -8,7 +8,14 @@ function csvparse(data) {
 
 	if (len === 0) return out;
 
-	loop1: for (let start = 0, end = 0, rows = 0, columns = 0; ; end++) {
+	function separateHeader() {
+		let header = [];
+		header = out.slice(0, 1);
+		out.splice(0, 1);
+		return { data: out, header: header };
+	}
+
+	for (let start = 0, end = 0, rows = 0, columns = 0; ; end++) {
 		if (end >= len) {
 			// EOF
 			//if (start < end)
@@ -25,39 +32,30 @@ function csvparse(data) {
 			continue;
 		}
 
-		if (data[end] === lineEnding || (lineEnding === '\r\n' && data[end] === '\r' && data[end + 1] === '\n')) {
+		if (data[end] === lineEnding) {
 			// line, the case '\r\n' is covered
 			row.push(data.substring(start, end));
 			out.push(row);
 			row = [];
 			columns = 0;
 			rows++;
-			if (lineEnding === '\r\n') end = end + 1;
-			start = end + 1;
-			continue;
-		}
-
-		if (startOrNewLine(end) && data[end] === '#') {
-			end = nextLineOrEOF(end); // search for next line or EOF
-			if (end === len) break; // EOF
-			if (lineEnding === '\r\n') end = end + 1;
 			start = end + 1;
 			continue;
 		}
 
 		if (data[end] === '"') {
 			// first quote of quoted field, or misplaced quote
-			if (startOrNewLine(end) || data[end - 1] === delimiter) {
+			if (end === 0 || data[end - 1] === lineEnding || data[end - 1] === delimiter) {
 				// first quote of quoted field
 				start = end = end + 1;
 
 				// search for closing quote
-				loop2: for (; ; end++) {
+				for (; ; end++) {
 					if (end === len) {
 						// misplaced quote, EOF
 						row.push(data.substring(start, end));
 						out.push(row);
-						break loop1;
+						return separateHeader();
 					}
 
 					if (data[end] === '"') {
@@ -65,7 +63,7 @@ function csvparse(data) {
 							// EOF
 							row.push(data.substring(start, end).replace(/""/g, '"'));
 							out.push(row);
-							break loop1;
+							return separateHeader();
 						}
 
 						if (data[end + 1] === '"') {
@@ -83,14 +81,13 @@ function csvparse(data) {
 							break;
 						}
 
-						if (data[end + 1] === lineEnding || (lineEnding === '\r\n' && data[end + 1] === '\r' && data[end + 2] === '\n')) {
+						if (data[end + 1] === lineEnding) {
 							// line, the case '\r\n' is covered
 							row.push(data.substring(start, end).replace(/""/g, '"'));
 							out.push(row);
 							row = [];
 							columns = 0;
 							rows++;
-							if (lineEnding === '\r\n') end = end + 1;
 							end = end + 1;
 							start = end + 1;
 							break;
@@ -110,22 +107,7 @@ function csvparse(data) {
 		}
 	}
 
-	function startOrNewLine(end) {
-		// search for next line or EOF
-		if (end === 0 || data[end - 1] === lineEnding || (end > 1 && lineEnding === '\r\n' && data[end - 2] === '\r' && data[end - 1] === '\n')) return true;
-		return false;
-	}
-
-	function nextLineOrEOF(end) {
-		// search for next line or EOF
-		for (; end !== len && !(data[end] === lineEnding || (lineEnding === '\r\n' && data[end] === '\r' && data[end + 1] === '\n')); end++);
-		return end;
-	}
-
-	let header = [];
-	header = out.slice(0, 1);
-	out.splice(0, 1);
-	return { data: out, header: header };
+	return separateHeader();
 }
 
 export default csvparse;
