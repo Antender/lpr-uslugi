@@ -393,10 +393,11 @@ class PrivateMessageHandler {
 	}
 
 	async sendMainMenu() {
+		const description = ((await this.botMenu.query(`select D where B = "main_menu" and A = "-dummy_state" and C = "-dummy_state"`))[0] || ['Вы в главном меню'])[0];
 		let buttons = await this.buildMenu('main_menu');
 		await this.telegram('sendMessage', {
 			chat_id: this.chatId,
-			text: 'Вы в главном меню',
+			text: description,
 			reply_markup: {
 				keyboard: buttons,
 				is_persistent: true,
