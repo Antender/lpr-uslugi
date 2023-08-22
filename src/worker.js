@@ -542,7 +542,7 @@ class PrivateMessageHandler {
 						await this.setState('register_phone');
 						return this.sendPhoneNicknameMenu();
 					}
-					cardRow = await this.hourlyBase.query(`select A, J, T where E = "${name}" and F = "${familyname}" and O = date "${birthdate}" and I = "${this.username}"`);
+					cardRow = await this.hourlyBase.query(`select A, J, T where E = "${name}" and F = "${familyname}" and O = date "${birthdate}" and I = "${this.username.toLowerCase()}"`);
 					if (cardRow.length > 0) {
 						let [rowId, cardId, oldTuid] = cardRow[0];
 						if (oldTuid != '' && tuid != oldTuid) {
