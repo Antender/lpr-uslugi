@@ -41,8 +41,13 @@ export class Logger {
 		return this.log('DEBUG', message);
 	}
 
-	async error(message) {
-		return this.log('ERROR', message);
+	async error(message, stack) {
+		this.messages.push({
+			timestamp: Date.now(),
+			severity: 'ERROR',
+			message: new String(message),
+			stack: new String(stack),
+		});
 	}
 
 	async logged(callback) {
@@ -50,7 +55,7 @@ export class Logger {
 		try {
 			result = await callback();
 		} catch (e) {
-			this.error(e.message);
+			this.error(e.message, e.stack);
 		}
 		return result;
 	}
