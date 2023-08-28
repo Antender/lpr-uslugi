@@ -11,12 +11,14 @@ export class Logger {
 
 	async sendLogs() {
 		if (this.messages.length > 0) {
+			const minTimestamp = this.messages.reduce((min, message) => (message.timestamp < min ? message.timestamp : min), this.messages[0].timestamp);
 			return this.fetch(`https://${this.address}/${this.collection}`, {
 				method: 'POST',
 				headers: {
 					'X-Access-Token': this.accessToken,
 				},
 				body: JSON.stringify({
+					minTimestamp,
 					messages: this.messages,
 				}),
 				retries: 3,
