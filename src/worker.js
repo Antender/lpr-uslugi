@@ -1,4 +1,5 @@
 import { Trello, telegram, SheetsAPI } from './external-api.js';
+import { Logger } from './logger.js';
 
 function processUpdate(update, env) {
 	try {
@@ -24,9 +25,13 @@ export default {
 				});
 			}
 
-			const update = await request.json();
+			const logger = new Logger(env);
+			await logger.logged(async () => {
+				const update = await request.json();
 
-			await processUpdate(update, env);
+				await processUpdate(update, env);
+			});
+			ctx.waitUntil(logger.sendLogs());
 
 			return new Response('OK', {
 				headers: { 'content-type': 'text/plain' },
