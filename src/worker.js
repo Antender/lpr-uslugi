@@ -1,16 +1,14 @@
-import { Trello, telegram, SheetsAPI } from './external-api.js';
+import { SheetsAPI } from './google-sheets.js';
 import { Logger } from './logger.js';
+import { Trello } from './trello.js';
+import { telegram } from './telegram.js';
 
 function processUpdate(update, env) {
-	try {
-		if (update.message && update.message.chat.type === 'private') {
-			return new PrivateMessageHandler(update.message, env).process();
-		}
-		if (update.message && (update.message.chat.type === 'group' || update.message.chat.type === 'supergroup')) {
-			return new GroupMessageHandler(update.message, env).process();
-		}
-	} catch (err) {
-		console.error(`Error: ${err} ; Stack: ${err.stack}`);
+	if (update.message && update.message.chat.type === 'private') {
+		return new PrivateMessageHandler(update.message, env).process();
+	}
+	if (update.message && (update.message.chat.type === 'group' || update.message.chat.type === 'supergroup')) {
+		return new GroupMessageHandler(update.message, env).process();
 	}
 }
 
