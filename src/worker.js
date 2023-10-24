@@ -438,6 +438,8 @@ class PrivateMessageHandler {
 	}
 
 	async updateCardField(tableColumn, rowId, oldData, newData, dataType, testRegex, cardId, cardField) {
+		return;
+		// Temporarily remove because Trello migrated to Taiga
 		if (oldData == newData) {
 			return;
 		}
